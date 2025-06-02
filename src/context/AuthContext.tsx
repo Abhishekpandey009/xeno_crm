@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
-import { auth, provider } from '../firebase'; // Make sure this path is correct
+import { auth, provider } from '../firebase';
 
 interface User {
   uid: string;
@@ -21,7 +21,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
@@ -36,15 +36,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const result = await signInWithPopup(auth, provider);
       const firebaseUser = result.user;
-
       const newUser: User = {
-      uid: firebaseUser.uid,
-      name: firebaseUser.displayName || '',
-      email: firebaseUser.email || '',
-      avatar: firebaseUser.photoURL || '',
-  };
-
-
+        uid: firebaseUser.uid,
+        name: firebaseUser.displayName || '',
+        email: firebaseUser.email || '',
+        avatar: firebaseUser.photoURL || '',
+      };
       setUser(newUser);
       localStorage.setItem('user', JSON.stringify(newUser));
     } catch (err) {
@@ -61,22 +58,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
-        setUser({
-        uid: firebaseUser.uid,
-        name: firebaseUser.displayName || '',
-        email: firebaseUser.email || '',
-        avatar: firebaseUser.photoURL || '',
-      });
-
+        const newUser: User = {
+          uid: firebaseUser.uid,
+          name: firebaseUser.displayName || '',
+          email: firebaseUser.email || '',
+          avatar: firebaseUser.photoURL || '',
+        };
+        setUser(newUser);
+        localStorage.setItem('user', JSON.stringify(newUser));
       } else {
         setUser(null);
+        localStorage.removeItem('user');
       }
       setLoading(false);
     });
@@ -84,11 +78,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => unsubscribe();
   }, []);
 
-  const isAuthenticated = !!user;
-
-  return (
-    <AuthContext.Provider value={{ isAuthenticated, user, loading, login, logout }}>
-      {children}
-    </AuthContext.Provider>
+  const contextValue = useMemo(
+    () => ({ isAuthenticated: !!user, user, loading, login, logout }),
+    [user, loading]
   );
+
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 };
