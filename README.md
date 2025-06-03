@@ -3,6 +3,9 @@
 A full-stack CRM solution for defining customer segments, creating campaigns, and simulating email delivery logs using Firestore.
 
 ---
+[![Live Demo](https://img.shields.io/badge/Live-Demo-green?style=for-the-badge)](https://xeno-crm-abhishek-pandeys-projects-2208186e.vercel.app)
+
+---
 
 ## 🚀 Features
 
