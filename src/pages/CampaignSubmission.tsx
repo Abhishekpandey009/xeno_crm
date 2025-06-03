@@ -9,29 +9,30 @@ const CampaignSubmission = () => {
   const [message, setMessage] = useState('');
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [sending, setSending] = useState(false);
 
   const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+  const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY;
 
   if (authLoading) return <p className="text-center">Loading user...</p>;
   if (!isAuthenticated) return <p className="text-center">🔒 Please log in to submit a campaign.</p>;
 
+  // 🔮 Generate AI marketing suggestions
   const generateSuggestions = async () => {
     setLoading(true);
     try {
-      const key = import.meta.env.VITE_OPENROUTER_API_KEY;
       const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${key}`,
+          Authorization: `Bearer ${OPENROUTER_API_KEY}`,
           'Content-Type': 'application/json',
-          'HTTP-Referer': 'http://localhost:5173',
+          'HTTP-Referer': 'https://xeno-crm-abhishek-pandeys-projects-2208186e.vercel.app',
           'X-Title': 'MarketPro Campaign Builder',
         },
         body: JSON.stringify({
           model: 'openai/gpt-3.5-turbo',
-          messages: [
-            { role: 'user', content: `Generate 3 short, friendly marketing messages for the goal: "${goal}"` }
-          ],
+          messages: [{ role: 'user', content: `Generate 3 short, friendly marketing messages for the goal: "${goal}"` }],
         }),
       });
 
@@ -39,45 +40,42 @@ const CampaignSubmission = () => {
       const lines = data.choices?.[0]?.message?.content?.split('\n').filter(Boolean) || [];
       setSuggestions(lines);
     } catch (err) {
-      alert('Error generating messages');
+      alert('❌ Error generating messages');
     } finally {
       setLoading(false);
     }
   };
 
+  // 💾 Save campaign only
   const handleSendCampaign = async () => {
     if (!campaignName || !message) return alert('Missing fields');
 
-    const newCampaign = {
-      uid: user?.uid,
-      name: campaignName,
-      goal,
-      message,
-      date: new Date().toISOString(),
-      status: 'completed',
-    };
-
     try {
-      await addDoc(collection(db, 'campaigns'), newCampaign);
-      alert('✅ Campaign Saved');
+      await addDoc(collection(db, 'campaigns'), {
+        uid: user?.uid,
+        name: campaignName,
+        goal,
+        message,
+        date: new Date().toISOString(),
+        status: 'completed',
+      });
+      alert('✅ Campaign saved');
     } catch (err) {
-      alert('Error saving campaign');
+      alert('❌ Error saving campaign');
     }
   };
 
+  // 🚀 Send + simulate delivery via backend
   const handleSendWithBackend = async () => {
     if (!campaignName || !message) return alert('Missing fields');
+    setSending(true);
 
     try {
       const snapshot = await getDocs(collection(db, 'customers'));
-      const customers = snapshot.docs.map(doc => {
-        const data = doc.data() as {
-          name: string;
-          email: string;
-          [key: string]: any;
-        };
-        return { id: doc.id, ...data };
-      });
+      const customers = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as { id: string; name: string; email: string }[];
 
       const campaignId = `camp_${Date.now()}`;
 
@@ -95,7 +93,7 @@ const CampaignSubmission = () => {
         const status = Math.random() < 0.9 ? 'SENT' : 'FAILED';
         const personalized = `Hi ${customer.name}, ${message}`;
 
-        await fetch('http://localhost:5000/api/send', {
+        await fetch(`${BACKEND_URL}/api/send`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -105,22 +103,29 @@ const CampaignSubmission = () => {
           }),
         });
 
-        await fetch('http://localhost:4000/api/delivery-receipt', {
+        await fetch(`${BACKEND_URL}/api/delivery-receipt`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             campaignId,
             customerId: customer.id,
             status,
-            subject: campaignName, // ✅ Ensures campaign history works
+            subject: campaignName,
           }),
         });
       }
 
       alert('✅ Campaign delivery simulated and logged!');
+      // Optional: clear form
+      setCampaignName('');
+      setGoal('');
+      setMessage('');
+      setSuggestions([]);
     } catch (error) {
       console.error(error);
       alert('❌ Error during backend delivery simulation');
+    } finally {
+      setSending(false);
     }
   };
 
@@ -144,7 +149,11 @@ const CampaignSubmission = () => {
         className="w-full mb-3 p-2 border rounded"
       />
 
-      <button onClick={generateSuggestions} disabled={loading} className="bg-blue-600 text-white px-4 py-2 rounded">
+      <button
+        onClick={generateSuggestions}
+        disabled={loading}
+        className="bg-blue-600 text-white px-4 py-2 rounded"
+      >
         {loading ? 'Loading...' : 'Generate AI Messages'}
       </button>
 
@@ -170,8 +179,12 @@ const CampaignSubmission = () => {
         <button onClick={handleSendCampaign} className="bg-green-600 text-white px-4 py-2 rounded">
           Save Campaign
         </button>
-        <button onClick={handleSendWithBackend} className="bg-purple-600 text-white px-4 py-2 rounded">
-          Send via Backend
+        <button
+          onClick={handleSendWithBackend}
+          disabled={sending}
+          className="bg-purple-600 text-white px-4 py-2 rounded"
+        >
+          {sending ? 'Sending...' : 'Send via Backend'}
         </button>
       </div>
     </div>
