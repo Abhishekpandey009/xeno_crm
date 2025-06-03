@@ -18,7 +18,6 @@ const CampaignSubmission = () => {
   if (authLoading) return <p className="text-center">Loading user...</p>;
   if (!isAuthenticated) return <p className="text-center">🔒 Please log in to submit a campaign.</p>;
 
-  // 🔮 Generate AI marketing suggestions
   const generateSuggestions = async () => {
     setLoading(true);
     try {
@@ -39,17 +38,15 @@ const CampaignSubmission = () => {
       const data = await res.json();
       const lines = data.choices?.[0]?.message?.content?.split('\n').filter(Boolean) || [];
       setSuggestions(lines);
-    } catch (err) {
+    } catch {
       alert('❌ Error generating messages');
     } finally {
       setLoading(false);
     }
   };
 
-  // 💾 Save campaign only
   const handleSendCampaign = async () => {
     if (!campaignName || !message) return alert('Missing fields');
-
     try {
       await addDoc(collection(db, 'campaigns'), {
         uid: user?.uid,
@@ -60,12 +57,11 @@ const CampaignSubmission = () => {
         status: 'completed',
       });
       alert('✅ Campaign saved');
-    } catch (err) {
+    } catch {
       alert('❌ Error saving campaign');
     }
   };
 
-  // 🚀 Send + simulate delivery via backend
   const handleSendWithBackend = async () => {
     if (!campaignName || !message) return alert('Missing fields');
     setSending(true);
@@ -96,11 +92,7 @@ const CampaignSubmission = () => {
         await fetch(`${BACKEND_URL}/api/send`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            to: customer.email,
-            subject: campaignName,
-            text: personalized,
-          }),
+          body: JSON.stringify({ to: customer.email, subject: campaignName, text: personalized }),
         });
 
         await fetch(`${BACKEND_URL}/api/delivery-receipt`, {
@@ -116,7 +108,6 @@ const CampaignSubmission = () => {
       }
 
       alert('✅ Campaign delivery simulated and logged!');
-      // Optional: clear form
       setCampaignName('');
       setGoal('');
       setMessage('');
@@ -130,7 +121,7 @@ const CampaignSubmission = () => {
   };
 
   return (
-    <div className="max-w-xl mx-auto p-4">
+    <div className="max-w-xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <h2 className="text-2xl font-bold mb-4">Create Campaign</h2>
 
       <input
@@ -152,7 +143,7 @@ const CampaignSubmission = () => {
       <button
         onClick={generateSuggestions}
         disabled={loading}
-        className="bg-blue-600 text-white px-4 py-2 rounded"
+        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {loading ? 'Loading...' : 'Generate AI Messages'}
       </button>
@@ -160,11 +151,17 @@ const CampaignSubmission = () => {
       <ul className="my-3">
         {suggestions.map((s, idx) => (
           <li key={idx}>
-            <button className="w-full text-left bg-gray-100 my-1 p-2 rounded" onClick={() => setMessage(s)}>
+            <button
+              className="w-full text-left bg-gray-100 hover:bg-gray-200 my-1 p-2 rounded"
+              onClick={() => setMessage(s)}
+            >
               {s}
             </button>
           </li>
         ))}
+        {!loading && suggestions.length === 0 && (
+          <p className="text-sm text-gray-500 italic mt-2">No suggestions yet. Generate above 👆</p>
+        )}
       </ul>
 
       <textarea
@@ -175,14 +172,17 @@ const CampaignSubmission = () => {
         className="w-full border p-2 rounded mb-3"
       />
 
-      <div className="flex gap-2">
-        <button onClick={handleSendCampaign} className="bg-green-600 text-white px-4 py-2 rounded">
+      <div className="flex flex-wrap gap-3">
+        <button
+          onClick={handleSendCampaign}
+          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+        >
           Save Campaign
         </button>
         <button
           onClick={handleSendWithBackend}
           disabled={sending}
-          className="bg-purple-600 text-white px-4 py-2 rounded"
+          className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {sending ? 'Sending...' : 'Send via Backend'}
         </button>
