@@ -1,13 +1,10 @@
+[![Live Demo](https://img.shields.io/badge/Live-Demo-green?style=for-the-badge)](https://xeno-crm.vercel.app)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![GitHub Repo Size](https://img.shields.io/github/repo-size/Abhishekpandey009/xeno_crm?style=for-the-badge)](https://github.com/Abhishekpandey009/xeno_crm)
 
 # 📬 Xeno CRM – Campaign Management Platform
 
 A full-stack CRM solution for defining customer segments, creating campaigns, and simulating email delivery logs using Firestore.
-
----
-[![Live Demo](https://img.shields.io/badge/Live-Demo-green?style=for-the-badge)](https://xeno-crm-abhishek-pandeys-projects-2208186e.vercel.app)
-
----
 
 ## 🚀 Features
 
