@@ -1,3 +1,5 @@
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+
 # 📬 Xeno CRM – Campaign Management Platform
 
 A full-stack CRM solution for defining customer segments, creating campaigns, and simulating email delivery logs using Firestore.
