@@ -158,3 +158,47 @@ npm install
 npm run dev
 ```
 ---
+
+## 📸 Screenshots
+
+### 🔐 Login Page
+![Login](./screenshots/login.png)
+
+### 🔍 Segment Builder UI
+![Segment Builder](./screenshots/segment-builder.png)
+
+### 📊 Audience Preview
+![Audience Preview](./screenshots/audience-preview.png)
+
+### ✨ AI-Powered Campaign Composer
+![Campaign Composer](./screenshots/campaign-composer.png)
+
+### 📬 Campaign History with Delivery Status
+![Campaign History](./screenshots/campaign-history.png)
+
+## 📤 Deployment
+
+- **Frontend:** [xeno-crm.vercel.app](https://xeno-crm.vercel.app)  
+- **Backend:** Render App (hosted on Render)
+
+---
+
+## ✅ Final Verdict
+
+- Fully working frontend + backend integration  
+- AI message suggestions via OpenRouter GPT  
+- Queue-based delivery simulation (brownie points ✅)  
+- Campaign delivery history with status logging  
+- Polished UI: loading states, tooltips, search, pagination  
+- Ideal for submission ✅
+
+---
+
+## 👨‍💻 Author
+
+**Abhishek Pandey**  
+GitHub: [@Abhishekpandey009](https://github.com/Abhishekpandey009)
+
+---
+
+🏁 Submitted for Xeno SDE Internship Assignment 2025
