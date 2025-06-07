@@ -180,7 +180,7 @@ npm run dev
 
 ## 📤 Deployment
 
-- **Frontend:** [xeno-crm.vercel.app](https://xeno-crm.vercel.app)  
+- **Frontend:** [xeno-crm.vercel.app](https://xeno-crm-abhishek-pandeys-projects-2208186e.vercel.app)  
 - **Backend:** Render App (hosted on Render)
 
 ---
